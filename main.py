@@ -1,16 +1,21 @@
 import os
 import pandas as pd
+from functools import reduce
 
-# Create dataframe to store all Excel files
 df = pd.DataFrame()
-df['Symbol'] = ''
+data = [None] * 5
 
-# Iterate through each file and 
+# Iterate though each file in stocks folder
 for xls in os.scandir('stocks'):
-    data = pd.read_excel(xls, sheet_name=None)
-    concat_data = pd.concat(data.values())
-    df = pd.merge(df, concat_data, how='inner', left_on=['Symbol', 'Company Name'], right_on=['Symbol', 'Company Name'])
-    
+    # Put each Excel sheet into data array
+    for i in range(5):
+        data[i] = (pd.read_excel(xls, sheet_name=i))
+    # Merge all indexes in data array based on Symbol and Company Name into one dataframe
+    df = reduce(lambda left, right: pd.merge(left, right, on=['Symbol', 'Company Name'], how='inner'), data)
+
+    # Write the dataframe into AllSheets.xlsx. If the sheet exists, replace. Else append with the name of the stock market file name
+    with pd.ExcelWriter('AllSheets.xlsx', mode='a', if_sheet_exists='replace') as writer:
+        df.to_excel(writer, sheet_name=str(xls.name))
         
-df.to_excel(excel_writer='AllSheets.xlsx', sheet_name='Sheet1')
-    
+
+
