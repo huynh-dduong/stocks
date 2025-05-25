@@ -12,6 +12,7 @@ for xls in os.scandir('stocks'):
     # Put each Excel sheet into data array
     for i in range(5):
         data[i] = (pd.read_excel(xls, sheet_name=i))
+        
     # Merge all indexes in data array based on Symbol and Company Name into one dataframe
     df = reduce(lambda left, right: pd.merge(left, right, on=['Symbol', 'Company Name'], how='inner'), data)
     
@@ -62,21 +63,25 @@ for xls in os.scandir('stocks'):
     # Get the sum of analyst opinions to see overall views. -8 would suggest not viewing, and 8 would strongly suggest viewing
     df['Analyst Opinion Sum'] = df[df_col_list].sum(axis=1)
     
+    for col in df.columns:
+        df[col] = df[col].replace({'%': '', 'x':''}, regex=True)
+        
+    
     # Creates histogram of number of stocks in each industy -- can indicate stocks better to look at in the market.
-    df['Industry'].value_counts().plot(kind='bar')
-    plt.xlabel('Industy')
-    plt.ylabel('Count')
-    plt.title('Count of Stocks by Industy')
+    # df['Industry'].value_counts().plot(kind='bar')
+    # plt.xlabel('Industy')
+    # plt.ylabel('Count')
+    # plt.title('Count of Stocks by Industy')
     # plt.show()
     
-    file_name = "output/" + str(xls)[11:-6] + ".csv"
-    df.to_csv(file_name, encoding='utf-8', index=False)
+    # file_name = "output/" + str(xls)[11:-6] + ".csv"
+    # df.to_csv(file_name, encoding='utf-8', index=False)
     
 
     
 # Write the dataframe into AllSheets.xlsx. If the sheet exists, replace. Else append with the name of the stock market file name
-# with pd.ExcelWriter('AllSheets.xlsx', mode='a', if_sheet_exists='replace') as writer:
-#     df.to_excel(writer, sheet_name=str(xls.name))
+with pd.ExcelWriter('AllSheets.xlsx', mode='a', if_sheet_exists='replace') as writer:
+    df.to_excel(writer, sheet_name=str(xls.name))
 
 
     
