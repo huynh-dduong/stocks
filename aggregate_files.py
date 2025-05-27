@@ -21,7 +21,7 @@ for xls in os.scandir('stocks'):
     
     # Replacing analyst opinions to a -1 to 1 scale, with -1 suggest negative opinion of stock and 1 suggest positive opinion of stock
     # for EDA process later
-    netrual_keywords = ['Neutral', '--', 'Hold', 'HOLD', 'NC', 'Hold', 'Neutral', 'Equalweight', None]
+    netrual_keywords = ['Neutral', '--', 'Hold', 'HOLD', 'NC', 'Hold', 'Neutral', 'Equalweight', '']
     semi_postive_keywords = ['Moderate Buy', 'Neutral From Avoid']
     semi_negative_keywords = ['Moderate Sell', 'Neutral From Long']
     positive_keywords = ['Positive', 'Buy', 'BUY', 'Long', 'Strong Buy', 'Bullish', 'Overweight']
@@ -35,6 +35,19 @@ for xls in os.scandir('stocks'):
         df.loc[df[col].isin(netrual_keywords), [col]] = 0
         df.loc[df[col].isin(semi_postive_keywords), [col]] = 0.5
         df.loc[df[col].isin(positive_keywords), [col]] = 1
+        
+    percent_col = ['5 Day Chg_x', '4 Week Chg_x', '52 Week Chg', 'Vs. S&P 500 4 Weeks', 'Vs. S&P 500 13 Weeks', 'Vs. S&P 500 52 Weeks',
+                   'Return on Equity',	'Return on Assets',	'EPS Growth CFY*',	'EPS Growth NFY*',	'Revenue Growth CFY*',
+                   'Revenue Growth NFY*',	'Dividend Yield',	'Dividend Growth 5 Year']
+    ratio_col = ['P/E Ratio (TTM)*',	'Price/Sales Ratio',	'Price/Book Ratio',	'Price/Cash Flow',	'Debt to Capital']
+        
+    for col in percent_col:
+        df[col] = df[col].replace({'%': ''}, regex=True)
+        df = df.rename(columns={str(col): str(col) + " by %"})
+
+    for col in ratio_col:
+        df[col] = df[col].replace({'x': ''}, regex=True)
+        df = df.rename(columns={str(col): str(col) + " by x"})
         
     # Lines will write a excel file with all stock exchanges in one area for Excel EDA, and a CSV file
     # For exporting to a SQL database and Tableau visualization dashboard
